@@ -1,0 +1,21 @@
+# Maunadtory libs
+setuptools
+dotenv
+wheel
+colorlog
+pytest
+pathlib
+httpx
+pydantic
+
+
+# Aviz92 Public packages
+custom-python-logger
+pytest-plugins
+python-simple-email-sender
+python-vault
+
+
+# Not maunadtory libs
+PyYAML
+pytest-asyncio
