@@ -1,8 +1,13 @@
 from typing import Optional
+
 import httpx
 
 
-def build_header(token: str, authorization_type: str = "Token", content_type: str = "application/json") -> dict:
+def build_header(
+    token: str,
+    authorization_type: str = "Token",
+    content_type: str = "application/json",
+) -> dict:
     return {
         "Content-Type": content_type,
         "Authorization": f"{authorization_type} {token}",
@@ -10,6 +15,8 @@ def build_header(token: str, authorization_type: str = "Token", content_type: st
 
 
 class RequestClient:
+    client: httpx.Client
+
     def __init__(self, header: dict, base_url: str = "http://localhost:8000"):
         self.base_url = base_url
         self.client = httpx.Client(base_url=self.base_url)

@@ -1,6 +1,7 @@
-from pyrest_model_client import RequestClient, build_header, set_client
-from example_usage.models.user import User
+"""Example usage of pyrest_model_client for demonstration and manual testing."""
+
 from example_usage.models.environment import Environment
+from pyrest_model_client import RequestClient, build_header, set_client
 
 
 def main():
@@ -8,7 +9,7 @@ def main():
     set_client(
         new_client=RequestClient(
             base_url="http://localhost:8000",
-            header=build_header(token="b727d196d8ba9012777d955c49dc895c93d2b886")
+            header=build_header(token="b727d196d8ba9012777d955c49dc895c93d2b886"),
         )
     )
 
