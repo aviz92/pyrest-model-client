@@ -40,7 +40,7 @@ def test_request_format(monkeypatch):
         return Resp()
 
     monkeypatch.setattr(client.client, "request", fake_request)
-    resp = client.request("GET", "test")
+    _ = client.request("GET", "test")
     assert called["endpoint"].startswith("/test/")
     assert called["method"] == "GET"
 
