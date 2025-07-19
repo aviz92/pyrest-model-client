@@ -1,5 +1,4 @@
 from typing import Optional
-
 import httpx
 
 
@@ -36,15 +35,15 @@ class RequestClient:
             params = {}
         return self.request("GET", endpoint, params=params)
 
-    def post(self, endpoint: str, json: Optional[dict] = None) -> httpx.Response:
-        if json is None:
-            json = {}
-        return self.request("POST", endpoint, json=json)
+    def post(self, endpoint: str, data: Optional[dict] = None) -> httpx.Response:
+        if data is None:
+            data = {}
+        return self.request("POST", endpoint, json=data)
 
-    def put(self, endpoint: str, json: Optional[dict] = None) -> httpx.Response:
-        if json is None:
-            json = {}
-        return self.request("PUT", endpoint, json=json)
+    def put(self, endpoint: str, data: Optional[dict] = None) -> httpx.Response:
+        if data is None:
+            data = {}
+        return self.request("PUT", endpoint, json=data)
 
     def delete(self, endpoint: str) -> httpx.Response:
         return self.request("DELETE", endpoint)

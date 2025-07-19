@@ -18,9 +18,9 @@ class BaseAPIModel(BaseModel):
     def save(self) -> None:
         data = self.model_dump(exclude_unset=True)
         if self.id:
-            response = client.put(f"/{self._resource_path}/{self.id}", json=data)
+            response = client.put(f"/{self._resource_path}/{self.id}", data=data)
         else:
-            response = client.post(f"/{self._resource_path}", json=data)
+            response = client.post(f"/{self._resource_path}", data=data)
         response.raise_for_status()
         self.id = response.json()["id"]
 

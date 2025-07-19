@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_version = "0.0.1"
+package_version = "0.0.2"
 
 package_name = "pyrest-model-client"
 package_description = "A simple, flexible Python HTTP client and API modeling toolkit built on httpx and pydantic."
