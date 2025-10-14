@@ -1,4 +1,5 @@
 from typing import ClassVar
+
 from pydantic import EmailStr
 
 from pyrest_model_client.base import BaseAPIModel

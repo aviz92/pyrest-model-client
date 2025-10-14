@@ -4,7 +4,7 @@ from example_usage.models.environment import Environment
 from pyrest_model_client import RequestClient, build_header, set_client
 
 
-def main():
+def main() -> None:
     # Initialize the API client globally for all models
     set_client(
         new_client=RequestClient(

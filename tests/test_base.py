@@ -9,17 +9,15 @@ class DummyModel(BaseAPIModel):
     _resource_path: str = "dummy"
 
 
-def setup_module(module):
+def setup_module(module) -> None:  # pylint: disable=W0613
     # Set a dummy client for all tests
-    set_client(
-        RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
-    )
+    set_client(RequestClient(header={"Authorization": "Token test"}, base_url="http://api"))
 
 
 def test_save_create(monkeypatch):
     model = DummyModel(name="foo")
 
-    def fake_post(endpoint, data):
+    def fake_post(endpoint, data) -> None:  # pylint: disable=W0613
         class Resp:
             def raise_for_status(self):
                 pass
@@ -29,9 +27,7 @@ def test_save_create(monkeypatch):
 
         return Resp()
 
-    set_client(
-        RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
-    )
+    set_client(RequestClient(header={"Authorization": "Token test"}, base_url="http://api"))
     monkeypatch.setattr("pyrest_model_client.base.client.post", fake_post)
     model.save()
     assert model.id == 42
@@ -40,7 +36,7 @@ def test_save_create(monkeypatch):
 def test_save_update(monkeypatch):
     model = DummyModel(name="foo", id=99)
 
-    def fake_put(endpoint, data):
+    def fake_put(endpoint, data) -> None:  # pylint: disable=W0613
         class Resp:
             def raise_for_status(self):
                 pass
@@ -50,9 +46,7 @@ def test_save_update(monkeypatch):
 
         return Resp()
 
-    set_client(
-        RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
-    )
+    set_client(RequestClient(header={"Authorization": "Token test"}, base_url="http://api"))
     monkeypatch.setattr("pyrest_model_client.base.client.put", fake_put)
     model.save()
     assert model.id == 99
@@ -61,16 +55,14 @@ def test_save_update(monkeypatch):
 def test_delete(monkeypatch):
     model = DummyModel(name="foo", id=1)
 
-    def fake_delete(endpoint):
+    def fake_delete(endpoint) -> None:  # pylint: disable=W0613
         class Resp:
             def raise_for_status(self):
                 pass
 
         return Resp()
 
-    set_client(
-        RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
-    )
+    set_client(RequestClient(header={"Authorization": "Token test"}, base_url="http://api"))
     monkeypatch.setattr("pyrest_model_client.base.client.delete", fake_delete)
     model.delete()
 
@@ -82,7 +74,7 @@ def test_delete_unsaved():
 
 
 def test_load(monkeypatch):
-    def fake_get(endpoint):
+    def fake_get(endpoint) -> None:  # pylint: disable=W0613
         class Resp:
             status_code = 200
 
@@ -94,9 +86,7 @@ def test_load(monkeypatch):
 
         return Resp()
 
-    set_client(
-        RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
-    )
+    set_client(RequestClient(header={"Authorization": "Token test"}, base_url="http://api"))
     monkeypatch.setattr("pyrest_model_client.base.client.get", fake_get)
     obj = DummyModel.load("5")
     assert obj.id == 5
@@ -104,7 +94,7 @@ def test_load(monkeypatch):
 
 
 def test_load_not_found(monkeypatch):
-    def fake_get(endpoint):
+    def fake_get(endpoint) -> None:  # pylint: disable=W0613
         class Resp:
             status_code = 404
 
@@ -116,16 +106,14 @@ def test_load_not_found(monkeypatch):
 
         return Resp()
 
-    set_client(
-        RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
-    )
+    set_client(RequestClient(header={"Authorization": "Token test"}, base_url="http://api"))
     monkeypatch.setattr("pyrest_model_client.base.client.get", fake_get)
     with pytest.raises(ValueError):
         DummyModel.load("123")
 
 
 def test_find(monkeypatch):
-    def fake_get(endpoint):
+    def fake_get(endpoint) -> None:  # pylint: disable=W0613
         class Resp:
             def raise_for_status(self):
                 pass
@@ -135,9 +123,7 @@ def test_find(monkeypatch):
 
         return Resp()
 
-    set_client(
-        RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
-    )
+    set_client(RequestClient(header={"Authorization": "Token test"}, base_url="http://api"))
     monkeypatch.setattr("pyrest_model_client.base.client.get", fake_get)
     objs = DummyModel.find()
     assert len(objs) == 2

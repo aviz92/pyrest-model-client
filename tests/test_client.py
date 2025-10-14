@@ -11,7 +11,7 @@ def test_build_header():
     assert header["Content-Type"] == "application/json"
 
 
-def test_set_credentials(monkeypatch):
+def test_set_credentials(monkeypatch: pytest.MonkeyPatch) -> None:  # pylint: disable=W0613
     client = RequestClient(header={"Authorization": "Token test"})
     new_header = {"Authorization": "Token new", "X-Test": "1"}
     client.set_credentials(new_header)
@@ -19,10 +19,8 @@ def test_set_credentials(monkeypatch):
         assert client.client.headers[k] == v
 
 
-def test_request_format(monkeypatch):
-    client = RequestClient(
-        header={"Authorization": "Token test"}, base_url="http://api"
-    )
+def test_request_format(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
     called = {}
 
     def fake_request(method, endpoint, **kwargs):
@@ -46,20 +44,18 @@ def test_request_format(monkeypatch):
 
 
 def test_get_post_put_delete(monkeypatch):
-    client = RequestClient(
-        header={"Authorization": "Token test"}, base_url="http://api"
-    )
+    client = RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
 
     def fake_request(method, endpoint, **kwargs):
         return (method, endpoint, kwargs)
 
     monkeypatch.setattr(client, "request", fake_request)
-    for method_name, expected_method in [
+    for method_name, expected_method in (
         ("get", "GET"),
         ("post", "POST"),
         ("put", "PUT"),
         ("delete", "DELETE"),
-    ]:
+    ):
         func = getattr(client, method_name)
         if method_name == "get":
             result = func("foo")
@@ -72,9 +68,7 @@ def test_get_post_put_delete(monkeypatch):
 
 
 def test_request_raises(monkeypatch):
-    client = RequestClient(
-        header={"Authorization": "Token test"}, base_url="http://api"
-    )
+    client = RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
 
     class FakeResp:
         def raise_for_status(self):
