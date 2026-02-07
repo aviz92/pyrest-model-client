@@ -1,26 +1,39 @@
-### ✅ Pull Request Checklist
+## ✅ Pull Request Checklist
+
+<!-- --- -->
+### 🧠 Code Quality
+  * [ ] Ran all linters and formatters (e.g., `black`, `ruff`, etc.)
+  * [ ] Verified there are **no console errors** or warnings.
+  * [ ] Removed all debug prints, TODOs, and commented-out code.
+  * [ ] Followed project naming and structure conventions.
 
 ---
 
-- Code follows project style guidelines:
-  * [ ] **Code is self-reviewed and cleaned up.**
-  * [ ] **Code follows style guidelines** (e.g., linting, formatting)
-  * [ ] **No sensitive data** (passwords, tokens, etc.)
+### 🧑‍💻 Code review
+  * [ ] **Self-reviewed and cleaned up**.
+  * [ ] **Reviewed by github-copilot.**
 
 ---
 
-- Tests:
+### 🔒 Security & Compliance
+- [ ] Ensured **no secrets**, credentials, or tokens are committed.
+- [ ] Reviewed external dependencies for security risks.
+- [ ] Verified that sensitive logs or data are properly sanitized.
+
+---
+
+### 🧪 Testing
   * [ ] **Tests added/updated.**
   * [ ] **All tests pass locally.**
+  * [ ] **Validated edge cases and error handling.**
 
 ---
 
-- Documentation updated:
+### 📚 Documentation
   * [ ] **Version in setup.py updated.**
-  * [ ] Documentation updated (code comments, README, or other docs) (if needed)
+  * [ ] **Updated README / inline docs for any new behavior.**
+  * [ ] **Update requirements.txt if needed.**
+  * [ ] **Updated changelog if needed.**
+  * [ ] **Set up GitHub repository secrets for CI/CD.**
 
 ---
-
-
-[//]: # (Comments below are optional)
-[//]: # (* [ ] All CI checks pass successfully)

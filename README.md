@@ -1,3 +1,12 @@
+![PyPI version](https://img.shields.io/pypi/v/pyrest-model-client)
+![Python](https://img.shields.io/badge/python->=3.12-blue)
+![Development Status](https://img.shields.io/badge/status-stable-green)
+![Maintenance](https://img.shields.io/maintenance/yes/2026)
+![PyPI](https://img.shields.io/pypi/dm/pyrest-model-client)
+![License](https://img.shields.io/pypi/l/pyrest-model-client)
+
+---
+
 # python-requests-client
 
 A simple, flexible Python HTTP client and API modeling toolkit built on top of [httpx](https://www.python-httpx.org/) and [pydantic](https://docs.pydantic.dev/). Easily integrate robust API requests and resource models into your Python projects.
