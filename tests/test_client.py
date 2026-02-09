@@ -96,9 +96,9 @@ def test_client_limits_configuration() -> None:
     limits = httpx.Limits(max_keepalive_connections=10, max_connections=20)
     client = RequestClient(header=headers, base_url="http://api.test", limits=limits)
 
-    transport = client.client._transport  # pylint = disable=W0212
-    assert transport._pool._max_keepalive_connections == 10  # pylint = disable=W0212
-    assert transport._pool._max_connections == 20  # pylint = disable=W0212
+    transport = client.client._transport
+    assert transport._pool._max_keepalive_connections == 10
+    assert transport._pool._max_connections == 20
 
 
 @respx.mock
