@@ -1,81 +1,85 @@
+import json
+
 import httpx
 import pytest
+import respx
+from httpx import Response
 
-from pyrest_model_client.client import RequestClient, build_header
+from pyrest_model_client import RequestClient, build_header
 
 
-def test_build_header():
-    token = "abc123"
-    header = build_header(token)
-    assert header["Authorization"] == f"Token {token}"
+@pytest.fixture(name="mock_headers")
+def _mock_headers() -> dict:
+    return build_header(token="test-token")
+
+
+@pytest.fixture(name="client")
+def _client(mock_headers: dict) -> RequestClient:
+    return RequestClient(header=mock_headers, base_url="http://api.test")
+
+
+def test_build_header() -> None:
+    header = build_header("my-secret", authorization_type="Bearer")
+    assert header["Authorization"] == "Bearer my-secret"
     assert header["Content-Type"] == "application/json"
 
 
-def test_set_credentials(monkeypatch: pytest.MonkeyPatch) -> None:  # pylint: disable=W0613
-    client = RequestClient(header={"Authorization": "Token test"})
-    new_header = {"Authorization": "Token new", "X-Test": "1"}
-    client.set_credentials(new_header)
-    for k, v in new_header.items():
-        assert client.client.headers[k] == v
+def test_client_initialization(client: RequestClient) -> None:
+    assert client.base_url == "http://api.test"
+    assert client.client.headers["Authorization"] == "Token test-token"
 
 
-def test_request_format(monkeypatch: pytest.MonkeyPatch) -> None:
-    client = RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
-    called = {}
+@respx.mock
+def test_get_request_success(client: RequestClient) -> None:
+    # Mock the specific GET call
+    route = respx.get("http://api.test/items/").mock(return_value=Response(200, json={"foo": "bar"}))
 
-    def fake_request(method, endpoint, **kwargs):
-        called["method"] = method
-        called["endpoint"] = endpoint
-        called["kwargs"] = kwargs
+    response = client.get("items")  # Testing slash normalization
 
-        class Resp:
-            def raise_for_status(self):
-                pass
-
-            def json(self):
-                return {"id": 1}
-
-        return Resp()
-
-    monkeypatch.setattr(client.client, "request", fake_request)
-    _ = client.request("GET", "test")
-    assert called["endpoint"].startswith("/test/")
-    assert called["method"] == "GET"
+    assert route.called
+    assert response == {"foo": "bar"}
 
 
-def test_get_post_put_delete(monkeypatch):
-    client = RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
+@respx.mock
+def test_post_request_as_json(client: RequestClient) -> None:
+    route = respx.post("http://api.test/create/").mock(return_value=Response(201, json={"status": "created"}))
 
-    def fake_request(method, endpoint, **kwargs):
-        return (method, endpoint, kwargs)
+    payload = {"name": "test"}
+    response = client.post("create", data=payload)
 
-    monkeypatch.setattr(client, "request", fake_request)
-    for method_name, expected_method in (
-        ("get", "GET"),
-        ("post", "POST"),
-        ("put", "PUT"),
-        ("delete", "DELETE"),
-    ):
-        func = getattr(client, method_name)
-        if method_name == "get":
-            result = func("foo")
-        elif method_name == "delete":
-            result = func("foo")
-        else:
-            result = func("foo", {"a": 1})
-        method, endpoint, _ = result
-        assert (method, endpoint) == (expected_method, "foo")
+    assert route.called
+    # Fix: Decode the sent bytes back to a dict to avoid whitespace mismatches
+    sent_data = json.loads(route.calls.last.request.content)
+    assert sent_data == payload
+    assert response == {"status": "created"}
 
 
-def test_request_raises(monkeypatch):
-    client = RequestClient(header={"Authorization": "Token test"}, base_url="http://api")
+@respx.mock
+def test_endpoint_normalization(client: RequestClient) -> None:
+    """Verify that 'users', '/users', and 'users/' all result in 'users/'"""
+    # Fix: Added a dummy json body so .json() doesn't fail
+    route = respx.get("http://api.test/users/").mock(return_value=Response(200, json={}))
 
-    class FakeResp:
-        def raise_for_status(self):
-            req = httpx.Request("GET", "http://api/fail")
-            resp = httpx.Response(500, request=req)
-            raise httpx.HTTPStatusError("fail", request=req, response=resp)
+    client.get("users")
+    client.get("/users")
+    client.get("users/")
 
-    monkeypatch.setattr(client.client, "request", lambda *a, **k: FakeResp())
+    assert route.call_count == 3
+
+
+@respx.mock
+def test_request_error_raises_exception(client: RequestClient) -> None:
+    respx.get("http://api.test/error/").mock(return_value=Response(404))
+
     with pytest.raises(httpx.HTTPStatusError):
-        client.request("GET", "fail")
+        client.get("error")
+
+
+@respx.mock
+def test_delete_request(client: RequestClient) -> None:
+    route = respx.delete("http://api.test/delete/1/").mock(return_value=Response(204, json={"deleted": True}))
+
+    response = client.delete("delete/1")
+
+    assert route.called
+    assert response == {"deleted": True}

@@ -37,6 +37,7 @@ dependencies = [
     "python-simple-email-sender>=1.0.6",
     "python-vault>=0.0.3",
     "pyyaml>=6.0.3",
+    "respx>=0.22.0",
     "setuptools>=80.9.0",
     "wheel>=0.45.1",
 ]
