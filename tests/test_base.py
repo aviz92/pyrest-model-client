@@ -8,7 +8,7 @@ from pyrest_model_client.base import get_mode_fields
 class User(BaseAPIModel):
     name: str
     email: str
-    resource_path: str = "/users"
+    resource_path: str = "users"
 
 
 def test_base_api_model_initialization() -> None:
