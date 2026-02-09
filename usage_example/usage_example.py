@@ -16,7 +16,10 @@ BASE_URL = f'{os.getenv("BASE_URL")}:{os.getenv("PORT")}'
 
 
 class FirstApp(BaseAPIModel):
-    """Technology model matching the API response."""
+    """
+    Model representing the FirstApp API resource. The fields should match the API response structure.
+    the app resource path is defined as "first_app" in the API of https://github.com/aviz92/django-basic-app project.
+    """
 
     name: str
     description: str | None = None
