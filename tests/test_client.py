@@ -72,3 +72,44 @@ def test_delete_request(client: RequestClient) -> None:
     response = client.delete("delete/1")
     assert route.called
     assert response == {"deleted": True}
+
+
+def test_client_without_trailing_slash() -> None:
+    """Test client with trailing slash disabled."""
+    headers = build_header(token="test-token")
+    client_no_slash = RequestClient(
+        header=headers, base_url="http://api.test", add_trailing_slash=False
+    )
+    assert client_no_slash.add_trailing_slash is False
+
+
+def test_client_timeout_configuration() -> None:
+    """Test client timeout configuration."""
+    headers = build_header(token="test-token")
+    timeout = httpx.Timeout(60.0, connect=20.0)
+    client = RequestClient(header=headers, base_url="http://api.test", timeout=timeout)
+    assert client.client.timeout.connect == 20.0
+    assert client.client.timeout.read == 60.0
+
+
+def test_client_limits_configuration() -> None:
+    """Test client connection pool limits."""
+    headers = build_header(token="test-token")
+    limits = httpx.Limits(max_keepalive_connections=10, max_connections=20)
+    client = RequestClient(header=headers, base_url="http://api.test", limits=limits)
+
+    transport = client.client._transport
+    assert transport._pool._max_keepalive_connections == 10
+    assert transport._pool._max_connections == 20
+
+
+@respx.mock
+def test_endpoint_without_trailing_slash() -> None:
+    """Test endpoint normalization without trailing slash."""
+    headers = build_header(token="test-token")
+    client_no_slash = RequestClient(
+        header=headers, base_url="http://api.test", add_trailing_slash=False
+    )
+    route = respx.get("http://api.test/users").mock(return_value=Response(200, json={}))
+    client_no_slash.get("users")
+    assert route.called

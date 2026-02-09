@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 from python_base_toolkit.utils.data_serialization import default_serialize
 
 from pyrest_model_client import RequestClient, build_header
-from pyrest_model_client.base import BaseAPIModel, get_mode_fields
+
+from pyrest_model_client.base import BaseAPIModel, get_model_fields
 
 load_dotenv()
 
@@ -35,7 +36,7 @@ def main(table_name: str) -> None:
     item_list = []
     params = None
     while res := client.get(table_name, params=params):  # pylint: disable=W0149
-        item_list.extend(get_mode_fields(res["results"], model=FirstApp))
+        item_list.extend(get_model_fields(res["results"], model=FirstApp))
 
         if not res["next"]:
             break
@@ -45,3 +46,4 @@ def main(table_name: str) -> None:
 
 if __name__ == "__main__":
     main(table_name="first_app")
+
