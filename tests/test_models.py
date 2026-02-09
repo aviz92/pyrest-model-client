@@ -1,15 +1,13 @@
 from pyrest_model_client.base import BaseAPIModel
 
 
-class SomeModel(BaseAPIModel):
-    """Technology model matching the API response."""
-
+class User(BaseAPIModel):
     name: str
-    description: str | None = None
-    resource_path: str = "some_model"
+    email: str
+    resource_path: str = "users"
 
 
 def test_user_model_inheritance() -> None:
-    some_model = SomeModel(name="some name test test", description="some description test test")
+    some_model = User(name="John Doe", email="johnd@gmail.com")
     assert isinstance(some_model, BaseAPIModel)
-    assert some_model.resource_path == "some_model"
+    assert some_model.resource_path == "users"
