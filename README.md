@@ -102,7 +102,7 @@ item_list = []
 params = None
 while res := client.get("first_app", params=params):
     item_list.extend(get_model_fields(res["results"], model=FirstApp))
-    
+
     if not res["next"]:
         break
     params = {"page": res["next"].split("/?page=")[-1]}
@@ -124,7 +124,7 @@ from pyrest_model_client import AsyncRequestClient, build_header
 
 async def main():
     header = build_header(token=TOKEN)
-    
+
     # Use async client as context manager
     async with AsyncRequestClient(base_url=BASE_URL, header=header) as client:
         # Make async requests

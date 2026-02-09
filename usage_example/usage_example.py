@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from python_base_toolkit.utils.data_serialization import default_serialize
 
 from pyrest_model_client import RequestClient, build_header
-
 from pyrest_model_client.base import BaseAPIModel, get_model_fields
 
 load_dotenv()
@@ -46,4 +45,3 @@ def main(table_name: str) -> None:
 
 if __name__ == "__main__":
     main(table_name="first_app")
-

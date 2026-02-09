@@ -51,17 +51,15 @@ class RequestClient:
     def get_default_timeout(timeout: float | httpx.Timeout | None) -> httpx.Timeout:
         if timeout is None:
             return httpx.Timeout(30.0, connect=10.0)
-        elif isinstance(timeout, httpx.Timeout):
+        if isinstance(timeout, httpx.Timeout):
             return timeout
-        else:
-            return httpx.Timeout(timeout, connect=timeout * 0.5)
+        return httpx.Timeout(timeout, connect=timeout * 0.5)
 
     @staticmethod
     def get_default_limits(limits: httpx.Limits | None) -> httpx.Limits:
         if limits is None:
             return httpx.Limits(max_keepalive_connections=5, max_connections=10)
-        else:
-            return limits
+        return limits
 
     @staticmethod
     def normalize_endpoint(endpoint: str, add_trailing_slash: bool = True) -> str:
@@ -163,9 +161,7 @@ class AsyncRequestClient:
         """
         self.client.headers.update(header)
 
-    async def request(
-        self, method: str, endpoint: str, as_json: bool = False, **kwargs: Any
-    ) -> httpx.Response | dict:
+    async def request(self, method: str, endpoint: str, as_json: bool = False, **kwargs: Any) -> httpx.Response | dict:
         endpoint = RequestClient.normalize_endpoint(endpoint, self.add_trailing_slash)
         response = await self.client.request(method, endpoint, **kwargs)
         response.raise_for_status()

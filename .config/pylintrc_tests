@@ -31,3 +31,4 @@ disable =
     # tests/ only
     W0613,      # unused-argument
     W0611,      # unused-import
+    W0212,      # protected-access

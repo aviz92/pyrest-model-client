@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
@@ -12,6 +12,7 @@ class BaseAPIModel(BaseModel):
     Subclasses should define a `resource_path` class variable or instance attribute
     to specify the API endpoint path for this resource.
     """
+
     id: int | str | None = None
     resource_path: str = ""
 
@@ -29,9 +30,7 @@ class BaseAPIModel(BaseModel):
             path = f"{path}/{self.id}"
         return path
 
-    def get_resource_url(
-        self, client: Union["RequestClient", "AsyncRequestClient"], include_id: bool = False
-    ) -> str:
+    def get_resource_url(self, client: "RequestClient | AsyncRequestClient", include_id: bool = False) -> str:
         """Get the full URL for this resource.
 
         Args:

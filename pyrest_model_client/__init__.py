@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 
 from pyrest_model_client.base import BaseAPIModel
-from pyrest_model_client.client import RequestClient, AsyncRequestClient, build_header
+from pyrest_model_client.client import AsyncRequestClient, RequestClient, build_header
 
 load_dotenv()
 
