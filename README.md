@@ -119,8 +119,17 @@ client.delete("first_app/1")
 
 ### 3. Using Async Client
 ```python
+import os
 import asyncio
+
+from dotenv import load_dotenv
 from pyrest_model_client import AsyncRequestClient, build_header
+from pyrest_model_client.base import BaseAPIModel
+
+load_dotenv()
+
+TOKEN = os.getenv("TOKEN")
+BASE_URL = f'{os.getenv("BASE_URL")}:{os.getenv("PORT")}'
 
 async def main():
     header = build_header(token=TOKEN)
