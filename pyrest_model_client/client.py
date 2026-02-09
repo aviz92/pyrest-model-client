@@ -25,7 +25,7 @@ class RequestClient:
     def set_credentials(self, header: dict) -> None:
         self.client.headers.update(header)
 
-    def request(self, method: str, endpoint: str, **kwargs: Any) -> httpx.Response:
+    def request(self, method: str, endpoint: str, as_json: bool = False, **kwargs: Any) -> httpx.Response | dict:
         if not endpoint.startswith("http://") and not endpoint.startswith("https://"):
             if not endpoint.startswith("/"):  # Ensure endpoint starts with a slash if it's a path (not a full URL)
                 endpoint = "/" + endpoint
@@ -35,22 +35,30 @@ class RequestClient:
 
         response = self.client.request(method, endpoint, **kwargs)
         response.raise_for_status()
-        return response
+        return response.json() if as_json else response
 
-    def get(self, endpoint: str, params: dict | None = None) -> httpx.Response:
+    def get(self, endpoint: str, params: dict | None = None, as_json: bool = True) -> httpx.Response | dict:
         if params is None:
             params = {}
-        return self.request("GET", endpoint, params=params)
+        response = self.request("GET", endpoint, params=params)
+        response.raise_for_status()
+        return response.json() if as_json else response
 
-    def post(self, endpoint: str, data: dict | None = None) -> httpx.Response:
+    def post(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
         if data is None:
             data = {}
-        return self.request("POST", endpoint, json=data)
+        response = self.request("POST", endpoint, json=data)
+        response.raise_for_status()
+        return response.json() if as_json else response
 
-    def put(self, endpoint: str, data: dict | None = None) -> httpx.Response:
+    def put(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
         if data is None:
             data = {}
-        return self.request("PUT", endpoint, json=data)
+        response = self.request("PUT", endpoint, json=data)
+        response.raise_for_status()
+        return response.json() if as_json else response
 
-    def delete(self, endpoint: str) -> httpx.Response:
-        return self.request("DELETE", endpoint)
+    def delete(self, endpoint: str, as_json: bool = True) -> httpx.Response | dict:
+        response = self.request("DELETE", endpoint)
+        response.raise_for_status()
+        return response.json() if as_json else response

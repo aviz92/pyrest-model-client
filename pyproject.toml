@@ -4,20 +4,21 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyrest-model-client"
-version = "0.0.5"
+version = "1.0.0"
 description = "A simple, flexible Python HTTP client and API modeling toolkit built on httpx and pydantic."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Avi Zaguri" },]
 keywords = ["rest", "development"]
 
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: Django",
     "Operating System :: OS Independent",
-    "Topic :: System :: Logging",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 dependencies = [
@@ -31,6 +32,7 @@ dependencies = [
     "pytest>=9.0.1",
     "pytest-mock>=3.15.1",
     "pytest-plugins>=1.0.9",
+    "python-base-toolkit>=1.0.1",
     "python-dotenv>=1.2.1",
     "python-simple-email-sender>=1.0.6",
     "python-vault>=0.0.3",
