@@ -41,7 +41,6 @@ def main(table_name: str) -> None:
             break
         params = {"page": res["next"].split("/?page=")[-1]}
     logger.info(f"Response: {json_pretty_format(data=item_list, default=default_serialize)}")
-    print()
 
 
 if __name__ == "__main__":

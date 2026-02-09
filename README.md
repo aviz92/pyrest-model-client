@@ -25,7 +25,7 @@ A simple, flexible Python HTTP client and API modeling toolkit built on top of [
 
 ## 📦 Installation
 ```bash
-pip install python-requests-client
+uv add python-requests-client
 ```
 
 ---
@@ -33,7 +33,6 @@ pip install python-requests-client
 ## 🔧 Usage
 
 ### 1. Define Your Models
-
 ```python
 from pyrest_model_client.base import BaseAPIModel
 from typing import ClassVar
@@ -51,36 +50,49 @@ class Environment(BaseAPIModel):
 ```
 
 ### 2. Initialize the Client
-
 ```python
-from pyrest_model_client import RequestClient, build_header, set_client
-from example_usage.models.user import User
-from example_usage.models.environment import Environment
+import os
 
-set_client(
-  new_client=RequestClient(
-    base_url="http://localhost:8000",
-    header=build_header(token="YOUR_API_TOKEN")
-  )
-)
+from custom_python_logger import build_logger, json_pretty_format
+from dotenv import load_dotenv
+from python_base_toolkit.utils.data_serialization import default_serialize
 
-# Create and save a new user
-e = User(name="Alice", email="alice@example.com")
-e.save()
+from pyrest_model_client import RequestClient, build_header
+from pyrest_model_client.base import BaseAPIModel, get_mode_fields
 
-# Update and save
-e.name = "Alice Smith"
-e.save()
+load_dotenv()
 
-# Find all environments
-environments = Environment.find()
-print(environments)
+logger = build_logger(__name__)
 
-# Load a specific user by ID
-user = User.load(resource_id="123")
+TOKEN = os.getenv("TOKEN")
+BASE_URL = f'{os.getenv("BASE_URL")}:{os.getenv("PORT")}'
 
-# Delete a user
-user.delete()
+
+class FirstApp(BaseAPIModel):
+    """
+    Model representing the FirstApp API resource. The fields should match the API response structure.
+    the app resource path is defined as "first_app" in the API of https://github.com/aviz92/django-basic-app project.
+    """
+
+    name: str
+    description: str | None = None
+    resource_path: str = "first_app"
+
+
+def main(table_name: str) -> None:
+    header = build_header(token=TOKEN)
+    client = RequestClient(base_url=BASE_URL, header=header)
+
+    # Example: Get all items from the API (paginated) and convert them to model instances
+    item_list = []
+    params = None
+    while res := client.get(table_name, params=params):  # pylint: disable=W0149
+        item_list.extend(get_mode_fields(res["results"], model=FirstApp))
+
+        if not res["next"]:
+            break
+        params = {"page": res["next"].split("/?page=")[-1]}
+    logger.info(f"Response: {json_pretty_format(data=item_list, default=default_serialize)}")
 ```
 
 ---
