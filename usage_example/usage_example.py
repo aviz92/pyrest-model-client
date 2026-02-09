@@ -20,7 +20,7 @@ class FirstApp(BaseAPIModel):
 
     name: str
     description: str | None = None
-    _resource_path: str = "first_app"
+    resource_path: str = "first_app"
 
 
 def main(table_name: str) -> None:

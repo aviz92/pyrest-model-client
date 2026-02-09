@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class BaseAPIModel(BaseModel):
     id: int | str | None = None
-    _resource_path: str = ""
+    resource_path: str = ""
 
 
 def get_mode_fields(items: list[dict], model: type[BaseAPIModel]) -> list[BaseAPIModel]:

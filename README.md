@@ -42,12 +42,12 @@ from typing import ClassVar
 class User(BaseAPIModel):
   name: str
   email: str
-  _resource_path: ClassVar[str] = "user"
+  resource_path: str = "user"
 
 
 class Environment(BaseAPIModel):
   name: str
-  _resource_path: ClassVar[str] = "environment"
+  resource_path: str = "environment"
 ```
 
 ### 2. Initialize the Client

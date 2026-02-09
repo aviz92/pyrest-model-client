@@ -33,9 +33,7 @@ def test_client_initialization(client: RequestClient) -> None:
 def test_get_request_success(client: RequestClient) -> None:
     # Mock the specific GET call
     route = respx.get("http://api.test/items/").mock(return_value=Response(200, json={"foo": "bar"}))
-
     response = client.get("items")  # Testing slash normalization
-
     assert route.called
     assert response == {"foo": "bar"}
 
@@ -43,12 +41,9 @@ def test_get_request_success(client: RequestClient) -> None:
 @respx.mock
 def test_post_request_as_json(client: RequestClient) -> None:
     route = respx.post("http://api.test/create/").mock(return_value=Response(201, json={"status": "created"}))
-
     payload = {"name": "test"}
     response = client.post("create", data=payload)
-
     assert route.called
-    # Fix: Decode the sent bytes back to a dict to avoid whitespace mismatches
     sent_data = json.loads(route.calls.last.request.content)
     assert sent_data == payload
     assert response == {"status": "created"}
@@ -57,20 +52,16 @@ def test_post_request_as_json(client: RequestClient) -> None:
 @respx.mock
 def test_endpoint_normalization(client: RequestClient) -> None:
     """Verify that 'users', '/users', and 'users/' all result in 'users/'"""
-    # Fix: Added a dummy json body so .json() doesn't fail
     route = respx.get("http://api.test/users/").mock(return_value=Response(200, json={}))
-
     client.get("users")
     client.get("/users")
     client.get("users/")
-
     assert route.call_count == 3
 
 
 @respx.mock
 def test_request_error_raises_exception(client: RequestClient) -> None:
     respx.get("http://api.test/error/").mock(return_value=Response(404))
-
     with pytest.raises(httpx.HTTPStatusError):
         client.get("error")
 
@@ -78,8 +69,6 @@ def test_request_error_raises_exception(client: RequestClient) -> None:
 @respx.mock
 def test_delete_request(client: RequestClient) -> None:
     route = respx.delete("http://api.test/delete/1/").mock(return_value=Response(204, json={"deleted": True}))
-
     response = client.delete("delete/1")
-
     assert route.called
     assert response == {"deleted": True}
