@@ -1,12 +1,12 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from pydantic import BaseModel
+from python_base_toolkit.base_structures.base_pydantic_model import BasePydanticModel
 
 if TYPE_CHECKING:
     from pyrest_model_client.client import AsyncRequestClient, RequestClient
 
 
-class BaseAPIModel(BaseModel):
+class BaseAPIModel(BasePydanticModel):
     """Base model for API resources with automatic resource path handling.
 
     Subclasses should define a `resource_path` class variable or instance attribute
