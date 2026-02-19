@@ -31,12 +31,12 @@ class FirstApp(BaseAPIModel):
 def main(table_name: str) -> None:
     header = build_header(token=TOKEN)
 
-    client = RestApiClient(header=header)
+    client = RestApiClient(base_url=base_url, header=header)
 
     # Example: Get all items from the API (paginated) and convert them to model instances
     item_list = []
     params = None
-    while res := client.get(f"{base_url}/{table_name}", params=params):  # pylint: disable=W0149
+    while res := client.get(table_name, params=params):  # pylint: disable=W0149
         item_list.extend(get_model_fields(res["results"], model=FirstApp))
 
         if not res["next"]:
