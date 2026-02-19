@@ -1,6 +1,7 @@
 from typing import Any
 
 import httpx
+from custom_python_logger import get_logger
 
 
 def build_header(
@@ -14,19 +15,19 @@ def build_header(
     }
 
 
-class RequestClient:
+class RestApiClient:
     client: httpx.Client
 
     def __init__(
         self,
         header: dict,
-        base_url: str = "http://localhost:8000",
+        base_url: str | None = None,
         timeout: float | httpx.Timeout | None = None,
         follow_redirects: bool = True,
         add_trailing_slash: bool = True,
         limits: httpx.Limits | None = None,
     ) -> None:
-        """Initialize the RequestClient.
+        """Initialize the RestApiClient.
 
         Args:
             header: HTTP headers dictionary (typically from build_header()).
@@ -36,7 +37,9 @@ class RequestClient:
             add_trailing_slash: Whether to automatically add trailing slash to endpoints.
             limits: Connection pool limits (max_keepalive_connections, max_connections).
         """
-        self.base_url = base_url.rstrip("/")
+        self.logger = get_logger(__class__.__name__)
+
+        self.base_url = base_url.rstrip("/") if base_url else ""
         self.add_trailing_slash = add_trailing_slash
 
         self.client = httpx.Client(
@@ -87,6 +90,8 @@ class RequestClient:
             JSON dict if as_json=True, otherwise httpx.Response object.
         """
         endpoint = self.normalize_endpoint(endpoint, self.add_trailing_slash)
+        self.logger.debug(f"Making {method} request to {endpoint} with kwargs: {kwargs}")
+
         response = self.client.request(method, endpoint, **kwargs)
         response.raise_for_status()
         return response.json() if as_json else response
@@ -110,7 +115,7 @@ class RequestClient:
         return self.request("DELETE", endpoint, as_json=as_json)
 
 
-class AsyncRequestClient:
+class AsyncRestApiClient:
     """Asynchronous HTTP client for REST API requests.
 
     Features:
@@ -125,13 +130,13 @@ class AsyncRequestClient:
     def __init__(
         self,
         header: dict,
-        base_url: str = "http://localhost:8000",
+        base_url: str | None = None,
         timeout: float | httpx.Timeout | None = None,
         follow_redirects: bool = True,
         add_trailing_slash: bool = True,
         limits: httpx.Limits | None = None,
     ) -> None:
-        """Initialize the AsyncRequestClient.
+        """Initialize the AsyncRestApiClient.
 
         Args:
             header: HTTP headers dictionary (typically from build_header()).
@@ -141,15 +146,17 @@ class AsyncRequestClient:
             add_trailing_slash: Whether to automatically add trailing slash to endpoints.
             limits: Connection pool limits (max_keepalive_connections, max_connections).
         """
-        self.base_url = base_url.rstrip("/")
+        self.logger = get_logger(__class__.__name__)
+
+        self.base_url = base_url.rstrip("/") if base_url else ""
         self.add_trailing_slash = add_trailing_slash
 
-        # Reuse RequestClient's static methods for defaults
+        # Reuse RestApiClient's static methods for defaults
         self.client = httpx.AsyncClient(
             base_url=self.base_url,
-            timeout=RequestClient.get_default_timeout(timeout=timeout),
+            timeout=RestApiClient.get_default_timeout(timeout=timeout),
             follow_redirects=follow_redirects,
-            limits=RequestClient.get_default_limits(limits=limits),
+            limits=RestApiClient.get_default_limits(limits=limits),
         )
         self.set_credentials(header=header)
 
@@ -162,7 +169,9 @@ class AsyncRequestClient:
         self.client.headers.update(header)
 
     async def request(self, method: str, endpoint: str, as_json: bool = False, **kwargs: Any) -> httpx.Response | dict:
-        endpoint = RequestClient.normalize_endpoint(endpoint, self.add_trailing_slash)
+        endpoint = RestApiClient.normalize_endpoint(endpoint, self.add_trailing_slash)
+        self.logger.debug(f"Making {method} request to {endpoint} with kwargs: {kwargs}")
+
         response = await self.client.request(method, endpoint, **kwargs)
         response.raise_for_status()
         return response.json() if as_json else response
@@ -189,7 +198,7 @@ class AsyncRequestClient:
         """Close the async client and release resources."""
         await self.client.aclose()
 
-    async def __aenter__(self) -> "AsyncRequestClient":
+    async def __aenter__(self) -> "AsyncRestApiClient":
         """Async context manager entry."""
         return self
 

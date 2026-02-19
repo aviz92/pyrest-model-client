@@ -15,8 +15,8 @@ A simple, flexible Python HTTP client and API modeling toolkit built on top of [
 
 ## 🚀 Features
 - **Model-driven**: Define and interact with API resources as Python classes using `BaseAPIModel`.
-- **Easy HTTP Requests**: Simple `RequestClient` for GET, POST, PUT, DELETE with automatic header and base URL management.
-- **Async Support**: Full async/await support with `AsyncRequestClient` for high-performance concurrent requests.
+- **Easy HTTP Requests**: Simple `RestApiClient` for GET, POST, PUT, DELETE with automatic header and base URL management.
+- **Async Support**: Full async/await support with `AsyncRestApiClient` for high-performance concurrent requests.
 - **Automatic Endpoint Normalization**: Configurable endpoint path normalization (trailing slash handling).
 - **Resource Path Integration**: Models can use their `resource_path` to generate endpoints and URLs automatically.
 - **Flexible Authentication**: Support for Token and Bearer authentication via `build_header()` helper.
@@ -59,7 +59,7 @@ import os
 
 from dotenv import load_dotenv
 
-from pyrest_model_client import RequestClient, build_header, get_model_fields
+from pyrest_model_client import RestApiClient, build_header, get_model_fields
 from pyrest_model_client.base import BaseAPIModel
 
 load_dotenv()
@@ -80,11 +80,11 @@ class FirstApp(BaseAPIModel):
 
 # Initialize the client with default settings
 header = build_header(token=TOKEN)
-client = RequestClient(base_url=BASE_URL, header=header)
+client = RestApiClient(base_url=BASE_URL, header=header)
 
 # Or configure the client with custom settings
 import httpx
-client = RequestClient(
+client = RestApiClient(
     base_url=BASE_URL,
     header=header,
     timeout=httpx.Timeout(60.0, connect=10.0),  # 60s read, 10s connect
@@ -123,7 +123,7 @@ import os
 import asyncio
 
 from dotenv import load_dotenv
-from pyrest_model_client import AsyncRequestClient, build_header
+from pyrest_model_client import AsyncRestApiClient, build_header
 from pyrest_model_client.base import BaseAPIModel
 
 load_dotenv()
@@ -135,7 +135,7 @@ async def main():
     header = build_header(token=TOKEN)
 
     # Use async client as context manager
-    async with AsyncRequestClient(base_url=BASE_URL, header=header) as client:
+    async with AsyncRestApiClient(base_url=BASE_URL, header=header) as client:
         # Make async requests
         response = await client.get("first_app")
         new_item = await client.post("first_app", data={"name": "Async App"})

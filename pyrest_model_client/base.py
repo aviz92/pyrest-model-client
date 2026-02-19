@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 from python_base_toolkit.base_structures.base_pydantic_model import BasePydanticModel
 
 if TYPE_CHECKING:
-    from pyrest_model_client.client import AsyncRequestClient, RequestClient
+    from pyrest_model_client.client import AsyncRestApiClient, RestApiClient
 
 
 class BaseAPIModel(BasePydanticModel):
@@ -30,11 +30,11 @@ class BaseAPIModel(BasePydanticModel):
             path = f"{path}/{self.id}"
         return path
 
-    def get_resource_url(self, client: "RequestClient | AsyncRequestClient", include_id: bool = False) -> str:
+    def get_resource_url(self, client: "RestApiClient | AsyncRestApiClient", include_id: bool = False) -> str:
         """Get the full URL for this resource.
 
         Args:
-            client: The RequestClient or AsyncRequestClient instance to get the base URL from.
+            client: The RestApiClient or AsyncRestApiClient instance to get the base URL from.
             include_id: If True and id is set, appends the id to the path.
 
         Returns:
