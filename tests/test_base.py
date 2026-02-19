@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from pyrest_model_client import BaseAPIModel, RequestClient, build_header
+from pyrest_model_client import BaseAPIModel, RestApiClient, build_header
 from pyrest_model_client.base import get_model_fields
 
 
@@ -76,7 +76,7 @@ def test_get_resource_url() -> None:
     """Test get_resource_url method."""
 
     user = User(name="Alice", email="alice@test.com", resource_path="users")
-    client = RequestClient(header=build_header("test"), base_url="http://api.test")
+    client = RestApiClient(header=build_header("test"), base_url="http://api.test")
 
     assert user.get_resource_url(client) == "http://api.test/users"
 

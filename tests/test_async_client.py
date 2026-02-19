@@ -2,7 +2,7 @@ import pytest
 import respx
 from httpx import Response
 
-from pyrest_model_client import AsyncRequestClient, build_header
+from pyrest_model_client import AsyncRestApiClient, build_header
 
 
 @pytest.fixture(name="mock_headers")
@@ -11,13 +11,13 @@ def _mock_headers() -> dict:
 
 
 @pytest.fixture(name="async_client")
-def _async_client(mock_headers: dict) -> AsyncRequestClient:
-    return AsyncRequestClient(header=mock_headers, base_url="http://api.test")
+def _async_client(mock_headers: dict) -> AsyncRestApiClient:
+    return AsyncRestApiClient(header=mock_headers, base_url="http://api.test")
 
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_async_get_request(async_client: AsyncRequestClient) -> None:
+async def test_async_get_request(async_client: AsyncRestApiClient) -> None:
     """Test async GET request."""
     route = respx.get("http://api.test/items/").mock(return_value=Response(200, json={"foo": "bar"}))
     response = await async_client.get("items")
@@ -27,7 +27,7 @@ async def test_async_get_request(async_client: AsyncRequestClient) -> None:
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_async_post_request(async_client: AsyncRequestClient) -> None:
+async def test_async_post_request(async_client: AsyncRestApiClient) -> None:
     """Test async POST request."""
     route = respx.post("http://api.test/create/").mock(return_value=Response(201, json={"status": "created"}))
     payload = {"name": "test"}
@@ -38,7 +38,7 @@ async def test_async_post_request(async_client: AsyncRequestClient) -> None:
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_async_put_request(async_client: AsyncRequestClient) -> None:
+async def test_async_put_request(async_client: AsyncRestApiClient) -> None:
     """Test async PUT request."""
     route = respx.put("http://api.test/update/1/").mock(return_value=Response(200, json={"status": "updated"}))
     payload = {"name": "updated"}
@@ -49,7 +49,7 @@ async def test_async_put_request(async_client: AsyncRequestClient) -> None:
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_async_delete_request(async_client: AsyncRequestClient) -> None:
+async def test_async_delete_request(async_client: AsyncRestApiClient) -> None:
     """Test async DELETE request."""
     route = respx.delete("http://api.test/delete/1/").mock(return_value=Response(204, json={"deleted": True}))
     response = await async_client.delete("delete/1")
@@ -60,7 +60,7 @@ async def test_async_delete_request(async_client: AsyncRequestClient) -> None:
 @pytest.mark.asyncio
 async def test_async_context_manager(mock_headers: dict) -> None:
     """Test async client as context manager."""
-    async with AsyncRequestClient(header=mock_headers, base_url="http://api.test") as client:
+    async with AsyncRestApiClient(header=mock_headers, base_url="http://api.test") as client:
         assert client.client.is_closed is False
     # Client should be closed after context exit
     assert client.client.is_closed is True
@@ -69,7 +69,7 @@ async def test_async_context_manager(mock_headers: dict) -> None:
 @pytest.mark.asyncio
 async def test_async_client_close(mock_headers: dict) -> None:
     """Test explicit async client close."""
-    client = AsyncRequestClient(header=mock_headers, base_url="http://api.test")
+    client = AsyncRestApiClient(header=mock_headers, base_url="http://api.test")
     assert client.client.is_closed is False
     await client.aclose()
     assert client.client.is_closed is True

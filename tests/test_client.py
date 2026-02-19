@@ -5,7 +5,7 @@ import pytest
 import respx
 from httpx import Response
 
-from pyrest_model_client import RequestClient, build_header
+from pyrest_model_client import RestApiClient, build_header
 
 
 @pytest.fixture(name="mock_headers")
@@ -14,8 +14,8 @@ def _mock_headers() -> dict:
 
 
 @pytest.fixture(name="client")
-def _client(mock_headers: dict) -> RequestClient:
-    return RequestClient(header=mock_headers, base_url="http://api.test")
+def _client(mock_headers: dict) -> RestApiClient:
+    return RestApiClient(header=mock_headers, base_url="http://api.test")
 
 
 def test_build_header() -> None:
@@ -24,13 +24,13 @@ def test_build_header() -> None:
     assert header["Content-Type"] == "application/json"
 
 
-def test_client_initialization(client: RequestClient) -> None:
+def test_client_initialization(client: RestApiClient) -> None:
     assert client.base_url == "http://api.test"
     assert client.client.headers["Authorization"] == "Token test-token"
 
 
 @respx.mock
-def test_get_request_success(client: RequestClient) -> None:
+def test_get_request_success(client: RestApiClient) -> None:
     # Mock the specific GET call
     route = respx.get("http://api.test/items/").mock(return_value=Response(200, json={"foo": "bar"}))
     response = client.get("items")  # Testing slash normalization
@@ -39,7 +39,7 @@ def test_get_request_success(client: RequestClient) -> None:
 
 
 @respx.mock
-def test_post_request_as_json(client: RequestClient) -> None:
+def test_post_request_as_json(client: RestApiClient) -> None:
     route = respx.post("http://api.test/create/").mock(return_value=Response(201, json={"status": "created"}))
     payload = {"name": "test"}
     response = client.post("create", data=payload)
@@ -50,7 +50,7 @@ def test_post_request_as_json(client: RequestClient) -> None:
 
 
 @respx.mock
-def test_endpoint_normalization(client: RequestClient) -> None:
+def test_endpoint_normalization(client: RestApiClient) -> None:
     """Verify that 'users', '/users', and 'users/' all result in 'users/'"""
     route = respx.get("http://api.test/users/").mock(return_value=Response(200, json={}))
     client.get("users")
@@ -60,14 +60,14 @@ def test_endpoint_normalization(client: RequestClient) -> None:
 
 
 @respx.mock
-def test_request_error_raises_exception(client: RequestClient) -> None:
+def test_request_error_raises_exception(client: RestApiClient) -> None:
     respx.get("http://api.test/error/").mock(return_value=Response(404))
     with pytest.raises(httpx.HTTPStatusError):
         client.get("error")
 
 
 @respx.mock
-def test_delete_request(client: RequestClient) -> None:
+def test_delete_request(client: RestApiClient) -> None:
     route = respx.delete("http://api.test/delete/1/").mock(return_value=Response(204, json={"deleted": True}))
     response = client.delete("delete/1")
     assert route.called
@@ -77,7 +77,7 @@ def test_delete_request(client: RequestClient) -> None:
 def test_client_without_trailing_slash() -> None:
     """Test client with trailing slash disabled."""
     headers = build_header(token="test-token")
-    client_no_slash = RequestClient(header=headers, base_url="http://api.test", add_trailing_slash=False)
+    client_no_slash = RestApiClient(header=headers, base_url="http://api.test", add_trailing_slash=False)
     assert client_no_slash.add_trailing_slash is False
 
 
@@ -85,7 +85,7 @@ def test_client_timeout_configuration() -> None:
     """Test client timeout configuration."""
     headers = build_header(token="test-token")
     timeout = httpx.Timeout(60.0, connect=20.0)
-    client = RequestClient(header=headers, base_url="http://api.test", timeout=timeout)
+    client = RestApiClient(header=headers, base_url="http://api.test", timeout=timeout)
     assert client.client.timeout.connect == 20.0
     assert client.client.timeout.read == 60.0
 
@@ -94,7 +94,7 @@ def test_client_limits_configuration() -> None:
     """Test client connection pool limits."""
     headers = build_header(token="test-token")
     limits = httpx.Limits(max_keepalive_connections=10, max_connections=20)
-    client = RequestClient(header=headers, base_url="http://api.test", limits=limits)
+    client = RestApiClient(header=headers, base_url="http://api.test", limits=limits)
 
     transport = client.client._transport
     assert transport._pool._max_keepalive_connections == 10
@@ -105,7 +105,7 @@ def test_client_limits_configuration() -> None:
 def test_endpoint_without_trailing_slash() -> None:
     """Test endpoint normalization without trailing slash."""
     headers = build_header(token="test-token")
-    client_no_slash = RequestClient(header=headers, base_url="http://api.test", add_trailing_slash=False)
+    client_no_slash = RestApiClient(header=headers, base_url="http://api.test", add_trailing_slash=False)
     route = respx.get("http://api.test/users").mock(return_value=Response(200, json={}))
     client_no_slash.get("users")
     assert route.called
