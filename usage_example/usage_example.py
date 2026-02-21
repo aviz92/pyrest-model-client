@@ -18,14 +18,21 @@ base_url: str = "http://localhost:8000"
 
 
 class VersionedModelApp(BaseAPIModel):
-    release: dict
+    release: dict | int
     status: str
 
 
-class FirstApp(VersionedModelApp):
+class Employee(VersionedModelApp):
     name: str
     description: str | None = None
-    resource_path: str = "first_app"
+    department: dict | int | None
+    resource_path: str = "employee"
+
+
+class Department(VersionedModelApp):
+    name: str
+    description: str | None = None
+    resource_path: str = "department"
 
 
 def main(table_name: str, const_filters: dict[str, str] | None = None) -> None:
@@ -37,7 +44,7 @@ def main(table_name: str, const_filters: dict[str, str] | None = None) -> None:
     item_list = []
     params = const_filters
     while res := client.get(table_name, params=params):  # pylint: disable=W0149
-        item_list.extend(get_model_fields(res["results"], model=FirstApp))
+        item_list.extend(get_model_fields(res["results"], model=Employee))
 
         if not res["next"]:
             break
@@ -47,6 +54,7 @@ def main(table_name: str, const_filters: dict[str, str] | None = None) -> None:
 
 if __name__ == "__main__":
     main(
-        table_name="first_app",
+        table_name="employee",
+        # table_name="department",
         const_filters={"release__version": "v1.0.0"},
     )
