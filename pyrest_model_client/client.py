@@ -8,7 +8,7 @@ def build_header(
     token: str,
     authorization_type: str = "Token",
     content_type: str = "application/json",
-) -> dict:
+) -> dict[str, str]:
     return {
         "Content-Type": content_type,
         "Authorization": f"{authorization_type} {token}",
@@ -64,20 +64,24 @@ class RestApiClient:
             return httpx.Limits(max_keepalive_connections=5, max_connections=10)
         return limits
 
-    @staticmethod
-    def normalize_endpoint(endpoint: str, add_trailing_slash: bool = True) -> str:
+    def normalize_endpoint(self, endpoint: str, add_trailing_slash: bool = True) -> str:
         if endpoint.startswith("http://") or endpoint.startswith("https://"):
             return endpoint
-        if not endpoint.startswith("/"):
-            endpoint = "/" + endpoint
+
         if add_trailing_slash and not endpoint.endswith("/"):
             endpoint = endpoint + "/"
+
+        if not endpoint.startswith("http") and not endpoint.startswith("https"):
+            endpoint = f'{self.base_url}/{endpoint.lstrip("/")}' if self.base_url else endpoint
+
         return endpoint
 
     def set_credentials(self, header: dict) -> None:
         self.client.headers.update(header)
 
-    def request(self, method: str, endpoint: str, as_json: bool = False, **kwargs: Any) -> httpx.Response | dict:
+    def request(
+        self, method: str, endpoint: str, as_json: bool = False, **kwargs: Any
+    ) -> httpx.Response | dict:
         """Make an HTTP request.
 
         Args:
@@ -90,23 +94,31 @@ class RestApiClient:
             JSON dict if as_json=True, otherwise httpx.Response object.
         """
         endpoint = self.normalize_endpoint(endpoint, self.add_trailing_slash)
-        self.logger.debug(f"Making {method} request to {endpoint} with kwargs: {kwargs}")
+        self.logger.debug(
+            f"Making {method} request to {endpoint} with kwargs: {kwargs}"
+        )
 
         response = self.client.request(method, endpoint, **kwargs)
         response.raise_for_status()
         return response.json() if as_json else response
 
-    def get(self, endpoint: str, params: dict | None = None, as_json: bool = True) -> httpx.Response | dict:
+    def get(
+        self, endpoint: str, params: dict | None = None, as_json: bool = True
+    ) -> httpx.Response | dict:
         if params is None:
             params = {}
         return self.request("GET", endpoint, params=params, as_json=as_json)
 
-    def post(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
+    def post(
+        self, endpoint: str, data: dict, as_json: bool = True
+    ) -> httpx.Response | dict:
         if data is None:
             data = {}
         return self.request("POST", endpoint, json=data, as_json=as_json)
 
-    def put(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
+    def put(
+        self, endpoint: str, data: dict, as_json: bool = True
+    ) -> httpx.Response | dict:
         if data is None:
             data = {}
         return self.request("PUT", endpoint, json=data, as_json=as_json)
@@ -168,30 +180,42 @@ class AsyncRestApiClient:
         """
         self.client.headers.update(header)
 
-    async def request(self, method: str, endpoint: str, as_json: bool = False, **kwargs: Any) -> httpx.Response | dict:
+    async def request(
+        self, method: str, endpoint: str, as_json: bool = False, **kwargs: Any
+    ) -> httpx.Response | dict:
         endpoint = RestApiClient.normalize_endpoint(endpoint, self.add_trailing_slash)
-        self.logger.debug(f"Making {method} request to {endpoint} with kwargs: {kwargs}")
+        self.logger.debug(
+            f"Making {method} request to {endpoint} with kwargs: {kwargs}"
+        )
 
         response = await self.client.request(method, endpoint, **kwargs)
         response.raise_for_status()
         return response.json() if as_json else response
 
-    async def get(self, endpoint: str, params: dict | None = None, as_json: bool = True) -> httpx.Response | dict:
+    async def get(
+        self, endpoint: str, params: dict | None = None, as_json: bool = True
+    ) -> httpx.Response | dict:
         if params is None:
             params = {}
         return await self.request("GET", endpoint, params=params, as_json=as_json)
 
-    async def post(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
+    async def post(
+        self, endpoint: str, data: dict, as_json: bool = True
+    ) -> httpx.Response | dict:
         if data is None:
             data = {}
         return await self.request("POST", endpoint, json=data, as_json=as_json)
 
-    async def put(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
+    async def put(
+        self, endpoint: str, data: dict, as_json: bool = True
+    ) -> httpx.Response | dict:
         if data is None:
             data = {}
         return await self.request("PUT", endpoint, json=data, as_json=as_json)
 
-    async def delete(self, endpoint: str, as_json: bool = True) -> httpx.Response | dict:
+    async def delete(
+        self, endpoint: str, as_json: bool = True
+    ) -> httpx.Response | dict:
         return await self.request("DELETE", endpoint, as_json=as_json)
 
     async def aclose(self) -> None:

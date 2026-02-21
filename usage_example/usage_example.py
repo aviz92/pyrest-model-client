@@ -17,25 +17,25 @@ BASE_URL = f'{os.getenv("BASE_URL")}:{os.getenv("PORT")}'
 base_url: str = "http://localhost:8000"
 
 
-class FirstApp(BaseAPIModel):
-    """
-    Model representing the FirstApp API resource. The fields should match the API response structure.
-    the app resource path is defined as "first_app" in the API of https://github.com/aviz92/django-basic-app project.
-    """
+class VersionedModelApp(BaseAPIModel):
+    release: dict
+    status: str
 
+
+class FirstApp(VersionedModelApp):
     name: str
     description: str | None = None
     resource_path: str = "first_app"
 
 
-def main(table_name: str) -> None:
+def main(table_name: str, const_filters: dict[str, str] | None = None) -> None:
     header = build_header(token=TOKEN)
 
     client = RestApiClient(base_url=base_url, header=header)
 
     # Example: Get all items from the API (paginated) and convert them to model instances
     item_list = []
-    params = None
+    params = const_filters
     while res := client.get(table_name, params=params):  # pylint: disable=W0149
         item_list.extend(get_model_fields(res["results"], model=FirstApp))
 
@@ -46,4 +46,7 @@ def main(table_name: str) -> None:
 
 
 if __name__ == "__main__":
-    main(table_name="first_app")
+    main(
+        table_name="first_app",
+        const_filters={"release__version": "v1.0.0"},
+    )
