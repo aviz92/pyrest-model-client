@@ -6,7 +6,7 @@ from python_base_toolkit.utils.data_serialization import default_serialize
 
 from pyrest_model_client import RestApiClient, build_header
 from pyrest_model_client.base import BaseAPIModel, get_model_fields
-from pyrest_model_client.const import LOGGER_NAME
+from pyrest_model_client.consts import LOGGER_NAME
 
 load_dotenv()
 

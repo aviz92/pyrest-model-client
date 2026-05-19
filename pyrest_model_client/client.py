@@ -3,7 +3,7 @@ from typing import Any
 import httpx
 from custom_python_logger import get_logger
 
-from pyrest_model_client.const import LOGGER_NAME
+from pyrest_model_client.consts import LOGGER_NAME
 
 
 def build_header(
