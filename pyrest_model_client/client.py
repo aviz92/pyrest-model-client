@@ -3,6 +3,8 @@ from typing import Any
 import httpx
 from custom_python_logger import get_logger
 
+from pyrest_model_client.const import LOGGER_NAME
+
 
 def build_header(
     token: str,
@@ -37,7 +39,7 @@ class RestApiClient:
             add_trailing_slash: Whether to automatically add trailing slash to endpoints.
             limits: Connection pool limits (max_keepalive_connections, max_connections).
         """
-        self.logger = get_logger(__class__.__name__)
+        self.logger = get_logger(LOGGER_NAME)
 
         self.base_url = base_url.rstrip("/") if base_url else ""
         self.add_trailing_slash = add_trailing_slash
@@ -158,7 +160,7 @@ class AsyncRestApiClient:
             add_trailing_slash: Whether to automatically add trailing slash to endpoints.
             limits: Connection pool limits (max_keepalive_connections, max_connections).
         """
-        self.logger = get_logger(__class__.__name__)
+        self.logger = get_logger(LOGGER_NAME)
 
         self.base_url = base_url.rstrip("/") if base_url else ""
         self.add_trailing_slash = add_trailing_slash
