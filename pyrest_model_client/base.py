@@ -24,7 +24,12 @@ class BaseAPIModel(BasePydanticModel):
 
         Returns:
             The endpoint path (e.g., "users" or "users/123").
+
+        Raises:
+            ValueError: If resource_path is not set on the subclass.
         """
+        if not self.resource_path:
+            raise ValueError(f"{type(self).__name__} must define a non-empty resource_path")
         path = self.resource_path
         if include_id and self.id is not None:
             path = f"{path}/{self.id}"
