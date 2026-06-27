@@ -88,7 +88,7 @@ class RestApiClient(_BaseRestClient):
         )
         self.set_credentials(header=header)
 
-    def request(self, method: HttpMethod, endpoint: str, **kwargs: Any) -> httpx.Response:
+    def _request(self, method: HttpMethod, endpoint: str, **kwargs: Any) -> httpx.Response:
         """Make an HTTP request.
 
         Args:
@@ -106,19 +106,19 @@ class RestApiClient(_BaseRestClient):
         return response
 
     def get(self, endpoint: str, params: dict | None = None) -> httpx.Response:
-        return self.request(HttpMethod.GET, endpoint, params=params or {})
+        return self._request(HttpMethod.GET, endpoint, params=params or {})
 
     def post(self, endpoint: str, data: dict | None = None) -> httpx.Response:
-        return self.request(HttpMethod.POST, endpoint, json=data or {})
+        return self._request(HttpMethod.POST, endpoint, json=data or {})
 
     def put(self, endpoint: str, data: dict | None = None) -> httpx.Response:
-        return self.request(HttpMethod.PUT, endpoint, json=data or {})
+        return self._request(HttpMethod.PUT, endpoint, json=data or {})
 
     def patch(self, endpoint: str, data: dict | None = None) -> httpx.Response:
-        return self.request(HttpMethod.PATCH, endpoint, json=data or {})
+        return self._request(HttpMethod.PATCH, endpoint, json=data or {})
 
     def delete(self, endpoint: str) -> httpx.Response:
-        return self.request(HttpMethod.DELETE, endpoint)
+        return self._request(HttpMethod.DELETE, endpoint)
 
     def __enter__(self) -> "RestApiClient":
         return self
@@ -167,7 +167,7 @@ class AsyncRestApiClient(_BaseRestClient):
         )
         self.set_credentials(header=header)
 
-    async def request(self, method: HttpMethod, endpoint: str, **kwargs: Any) -> httpx.Response:
+    async def _request(self, method: HttpMethod, endpoint: str, **kwargs: Any) -> httpx.Response:
         """Make an async HTTP request.
 
         Args:
@@ -185,19 +185,19 @@ class AsyncRestApiClient(_BaseRestClient):
         return response
 
     async def get(self, endpoint: str, params: dict | None = None) -> httpx.Response:
-        return await self.request(HttpMethod.GET, endpoint, params=params or {})
+        return await self._request(HttpMethod.GET, endpoint, params=params or {})
 
     async def post(self, endpoint: str, data: dict | None = None) -> httpx.Response:
-        return await self.request(HttpMethod.POST, endpoint, json=data or {})
+        return await self._request(HttpMethod.POST, endpoint, json=data or {})
 
     async def put(self, endpoint: str, data: dict | None = None) -> httpx.Response:
-        return await self.request(HttpMethod.PUT, endpoint, json=data or {})
+        return await self._request(HttpMethod.PUT, endpoint, json=data or {})
 
     async def patch(self, endpoint: str, data: dict | None = None) -> httpx.Response:
-        return await self.request(HttpMethod.PATCH, endpoint, json=data or {})
+        return await self._request(HttpMethod.PATCH, endpoint, json=data or {})
 
     async def delete(self, endpoint: str) -> httpx.Response:
-        return await self.request(HttpMethod.DELETE, endpoint)
+        return await self._request(HttpMethod.DELETE, endpoint)
 
     async def aclose(self) -> None:
         """Close the async client and release resources."""
