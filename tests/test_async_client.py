@@ -18,59 +18,47 @@ def _async_client(mock_headers: dict) -> AsyncRestApiClient:
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_async_get_returns_response(async_client: AsyncRestApiClient) -> None:
+async def test_async_get(async_client: AsyncRestApiClient) -> None:
     respx.get("http://api.test/items/").mock(return_value=Response(200, json={"foo": "bar"}))
     response = await async_client.get("items")
     assert isinstance(response, httpx.Response)
-    assert response.status_code == 200
+    assert response.json() == {"foo": "bar"}
 
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_async_get_as_json(async_client: AsyncRestApiClient) -> None:
-    route = respx.get("http://api.test/items/").mock(return_value=Response(200, json={"foo": "bar"}))
-    response = await async_client.get_as_json("items")
-    assert route.called
-    assert response == {"foo": "bar"}
-
-
-@pytest.mark.asyncio
-@respx.mock
-async def test_async_post_as_json(async_client: AsyncRestApiClient) -> None:
+async def test_async_post(async_client: AsyncRestApiClient) -> None:
     route = respx.post("http://api.test/create/").mock(return_value=Response(201, json={"status": "created"}))
-    payload = {"name": "test"}
-    response = await async_client.post_as_json("create", data=payload)
+    response = await async_client.post("create", data={"name": "test"})
     assert route.called
-    assert response == {"status": "created"}
+    assert response.json() == {"status": "created"}
 
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_async_put_as_json(async_client: AsyncRestApiClient) -> None:
+async def test_async_put(async_client: AsyncRestApiClient) -> None:
     route = respx.put("http://api.test/update/1/").mock(return_value=Response(200, json={"status": "updated"}))
-    payload = {"name": "updated"}
-    response = await async_client.put_as_json("update/1", data=payload)
+    response = await async_client.put("update/1", data={"name": "updated"})
     assert route.called
-    assert response == {"status": "updated"}
+    assert response.json() == {"status": "updated"}
 
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_async_patch_as_json(async_client: AsyncRestApiClient) -> None:
+async def test_async_patch(async_client: AsyncRestApiClient) -> None:
     route = respx.patch("http://api.test/items/1/").mock(return_value=Response(200, json={"name": "updated"}))
-    payload = {"name": "updated"}
-    response = await async_client.patch_as_json("items/1", data=payload)
+    response = await async_client.patch("items/1", data={"name": "updated"})
     assert route.called
-    assert response == {"name": "updated"}
+    assert response.json() == {"name": "updated"}
 
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_async_delete_as_json(async_client: AsyncRestApiClient) -> None:
+async def test_async_delete(async_client: AsyncRestApiClient) -> None:
     route = respx.delete("http://api.test/delete/1/").mock(return_value=Response(204, json={"deleted": True}))
-    response = await async_client.delete_as_json("delete/1")
+    response = await async_client.delete("delete/1")
     assert route.called
-    assert response == {"deleted": True}
+    assert response.json() == {"deleted": True}
 
 
 @pytest.mark.asyncio
