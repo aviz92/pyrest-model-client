@@ -17,40 +17,15 @@ def build_header(
     }
 
 
-class RestApiClient:
-    client: httpx.Client
+class _BaseRestClient:
+    """Shared config and endpoint logic for sync and async REST clients."""
 
-    def __init__(
-        self,
-        header: dict,
-        base_url: str | None = None,
-        timeout: float | httpx.Timeout | None = None,
-        follow_redirects: bool = True,
-        add_trailing_slash: bool = True,
-        limits: httpx.Limits | None = None,
-    ) -> None:
-        """Initialize the RestApiClient.
+    client: httpx.Client | httpx.AsyncClient
 
-        Args:
-            header: HTTP headers dictionary (typically from build_header()).
-            base_url: Base URL for all requests.
-            timeout: Request timeout in seconds or httpx.Timeout object.
-            follow_redirects: Whether to follow HTTP redirects.
-            add_trailing_slash: Whether to automatically add trailing slash to endpoints.
-            limits: Connection pool limits (max_keepalive_connections, max_connections).
-        """
+    def __init__(self, base_url: str | None, add_trailing_slash: bool) -> None:
         self.logger = get_logger(LOGGER_NAME)
-
         self.base_url = base_url.rstrip("/") if base_url else ""
         self.add_trailing_slash = add_trailing_slash
-
-        self.client = httpx.Client(
-            base_url=self.base_url,
-            timeout=self.get_default_timeout(timeout=timeout),
-            follow_redirects=follow_redirects,
-            limits=self.get_default_limits(limits=limits),
-        )
-        self.set_credentials(header=header)
 
     @staticmethod
     def get_default_timeout(timeout: float | httpx.Timeout | None) -> httpx.Timeout:
@@ -81,6 +56,38 @@ class RestApiClient:
     def set_credentials(self, header: dict) -> None:
         self.client.headers.update(header)
 
+
+class RestApiClient(_BaseRestClient):
+    client: httpx.Client
+
+    def __init__(
+        self,
+        header: dict,
+        base_url: str | None = None,
+        timeout: float | httpx.Timeout | None = None,
+        follow_redirects: bool = True,
+        add_trailing_slash: bool = True,
+        limits: httpx.Limits | None = None,
+    ) -> None:
+        """Initialize the RestApiClient.
+
+        Args:
+            header: HTTP headers dictionary (typically from build_header()).
+            base_url: Base URL for all requests.
+            timeout: Request timeout in seconds or httpx.Timeout object.
+            follow_redirects: Whether to follow HTTP redirects.
+            add_trailing_slash: Whether to automatically add trailing slash to endpoints.
+            limits: Connection pool limits (max_keepalive_connections, max_connections).
+        """
+        super().__init__(base_url=base_url, add_trailing_slash=add_trailing_slash)
+        self.client = httpx.Client(
+            base_url=self.base_url,
+            timeout=self.get_default_timeout(timeout=timeout),
+            follow_redirects=follow_redirects,
+            limits=self.get_default_limits(limits=limits),
+        )
+        self.set_credentials(header=header)
+
     def request(
         self, method: str, endpoint: str, as_json: bool = False, **kwargs: Any
     ) -> httpx.Response | dict:
@@ -96,38 +103,27 @@ class RestApiClient:
             JSON dict if as_json=True, otherwise httpx.Response object.
         """
         endpoint = self.normalize_endpoint(endpoint, self.add_trailing_slash)
-        self.logger.debug(
-            f"Making {method} request to {endpoint} with kwargs: {kwargs}"
-        )
-
+        self.logger.debug(f"Making {method} request to {endpoint} with kwargs: {kwargs}")
         response = self.client.request(method, endpoint, **kwargs)
         response.raise_for_status()
         return response.json() if as_json else response
 
-    def get(
-        self, endpoint: str, params: dict | None = None, as_json: bool = True
-    ) -> httpx.Response | dict:
+    def get(self, endpoint: str, params: dict | None = None, as_json: bool = True) -> httpx.Response | dict:
         if params is None:
             params = {}
         return self.request("GET", endpoint, params=params, as_json=as_json)
 
-    def post(
-        self, endpoint: str, data: dict, as_json: bool = True
-    ) -> httpx.Response | dict:
+    def post(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
         if data is None:
             data = {}
         return self.request("POST", endpoint, json=data, as_json=as_json)
 
-    def put(
-        self, endpoint: str, data: dict, as_json: bool = True
-    ) -> httpx.Response | dict:
+    def put(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
         if data is None:
             data = {}
         return self.request("PUT", endpoint, json=data, as_json=as_json)
 
-    def patch(
-        self, endpoint: str, data: dict, as_json: bool = True
-    ) -> httpx.Response | dict:
+    def patch(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
         if data is None:
             data = {}
         return self.request("PATCH", endpoint, json=data, as_json=as_json)
@@ -136,7 +132,7 @@ class RestApiClient:
         return self.request("DELETE", endpoint, as_json=as_json)
 
 
-class AsyncRestApiClient:
+class AsyncRestApiClient(_BaseRestClient):
     """Asynchronous HTTP client for REST API requests.
 
     Features:
@@ -167,83 +163,56 @@ class AsyncRestApiClient:
             add_trailing_slash: Whether to automatically add trailing slash to endpoints.
             limits: Connection pool limits (max_keepalive_connections, max_connections).
         """
-        self.logger = get_logger(LOGGER_NAME)
-
-        self.base_url = base_url.rstrip("/") if base_url else ""
-        self.add_trailing_slash = add_trailing_slash
-
-        # Reuse RestApiClient's static methods for defaults
+        super().__init__(base_url=base_url, add_trailing_slash=add_trailing_slash)
         self.client = httpx.AsyncClient(
             base_url=self.base_url,
-            timeout=RestApiClient.get_default_timeout(timeout=timeout),
+            timeout=self.get_default_timeout(timeout=timeout),
             follow_redirects=follow_redirects,
-            limits=RestApiClient.get_default_limits(limits=limits),
+            limits=self.get_default_limits(limits=limits),
         )
         self.set_credentials(header=header)
-
-    def set_credentials(self, header: dict) -> None:
-        """Update the client's HTTP headers.
-
-        Args:
-            header: Dictionary of HTTP headers to set.
-        """
-        self.client.headers.update(header)
-
-    def normalize_endpoint(self, endpoint: str, add_trailing_slash: bool = True) -> str:
-        if endpoint.startswith("http://") or endpoint.startswith("https://"):
-            return endpoint
-
-        if add_trailing_slash and not endpoint.endswith("/"):
-            endpoint = endpoint + "/"
-
-        if not endpoint.startswith("http") and not endpoint.startswith("https"):
-            endpoint = f'{self.base_url}/{endpoint.lstrip("/")}' if self.base_url else endpoint
-
-        return endpoint
 
     async def request(
         self, method: str, endpoint: str, as_json: bool = False, **kwargs: Any
     ) -> httpx.Response | dict:
-        endpoint = self.normalize_endpoint(endpoint, self.add_trailing_slash)
-        self.logger.debug(
-            f"Making {method} request to {endpoint} with kwargs: {kwargs}"
-        )
+        """Make an async HTTP request.
 
+        Args:
+            method: HTTP method (GET, POST, PUT, DELETE, etc.).
+            endpoint: Endpoint path or full URL.
+            as_json: Whether to return JSON response (True) or Response object (False).
+            **kwargs: Additional arguments passed to httpx.AsyncClient.request().
+
+        Returns:
+            JSON dict if as_json=True, otherwise httpx.Response object.
+        """
+        endpoint = self.normalize_endpoint(endpoint, self.add_trailing_slash)
+        self.logger.debug(f"Making {method} request to {endpoint} with kwargs: {kwargs}")
         response = await self.client.request(method, endpoint, **kwargs)
         response.raise_for_status()
         return response.json() if as_json else response
 
-    async def get(
-        self, endpoint: str, params: dict | None = None, as_json: bool = True
-    ) -> httpx.Response | dict:
+    async def get(self, endpoint: str, params: dict | None = None, as_json: bool = True) -> httpx.Response | dict:
         if params is None:
             params = {}
         return await self.request("GET", endpoint, params=params, as_json=as_json)
 
-    async def post(
-        self, endpoint: str, data: dict, as_json: bool = True
-    ) -> httpx.Response | dict:
+    async def post(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
         if data is None:
             data = {}
         return await self.request("POST", endpoint, json=data, as_json=as_json)
 
-    async def put(
-        self, endpoint: str, data: dict, as_json: bool = True
-    ) -> httpx.Response | dict:
+    async def put(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
         if data is None:
             data = {}
         return await self.request("PUT", endpoint, json=data, as_json=as_json)
 
-    async def patch(
-        self, endpoint: str, data: dict, as_json: bool = True
-    ) -> httpx.Response | dict:
+    async def patch(self, endpoint: str, data: dict, as_json: bool = True) -> httpx.Response | dict:
         if data is None:
             data = {}
         return await self.request("PATCH", endpoint, json=data, as_json=as_json)
 
-    async def delete(
-        self, endpoint: str, as_json: bool = True
-    ) -> httpx.Response | dict:
+    async def delete(self, endpoint: str, as_json: bool = True) -> httpx.Response | dict:
         return await self.request("DELETE", endpoint, as_json=as_json)
 
     async def aclose(self) -> None:
@@ -251,9 +220,7 @@ class AsyncRestApiClient:
         await self.client.aclose()
 
     async def __aenter__(self) -> "AsyncRestApiClient":
-        """Async context manager entry."""
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        """Async context manager exit."""
         await self.aclose()
