@@ -51,5 +51,8 @@ where = ["."]
 include = ["pyrest_model_client*"]
 namespaces = false
 
+[tool.setuptools.package-data]
+pyrest_model_client = ["py.typed"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

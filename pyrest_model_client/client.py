@@ -62,7 +62,7 @@ class RestApiClient(_BaseRestClient):
 
     def __init__(
         self,
-        header: dict,
+        header: dict[str, str],
         base_url: str | None = None,
         timeout: float | httpx.Timeout | None = None,
         follow_redirects: bool = True,
@@ -141,7 +141,7 @@ class AsyncRestApiClient(_BaseRestClient):
 
     def __init__(
         self,
-        header: dict,
+        header: dict[str, str],
         base_url: str | None = None,
         timeout: float | httpx.Timeout | None = None,
         follow_redirects: bool = True,
