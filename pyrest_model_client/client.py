@@ -48,12 +48,12 @@ class _BaseRestClient:
         if add_trailing_slash and not endpoint.endswith("/"):
             endpoint = endpoint + "/"
 
-        if not endpoint.startswith("http") and not endpoint.startswith("https"):
-            endpoint = f'{self.base_url}/{endpoint.lstrip("/")}' if self.base_url else endpoint
+        if self.base_url:
+            endpoint = f'{self.base_url}/{endpoint.lstrip("/")}'
 
         return endpoint
 
-    def set_credentials(self, header: dict) -> None:
+    def set_credentials(self, header: dict[str, str]) -> None:
         self.client.headers.update(header)
 
 

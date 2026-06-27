@@ -85,6 +85,24 @@ def test_delete(client: RestApiClient) -> None:
     assert response.json() == {"deleted": True}
 
 
+@respx.mock
+def test_put(client: RestApiClient) -> None:
+    route = respx.put("http://api.test/items/1/").mock(return_value=Response(200, json={"name": "updated"}))
+    payload = {"name": "updated"}
+    response = client.put("items/1", data=payload)
+    assert route.called
+    sent_data = json.loads(route.calls.last.request.content)
+    assert sent_data == payload
+    assert response.json() == {"name": "updated"}
+
+
+def test_sync_context_manager() -> None:
+    headers = build_header(token="test-token")
+    with RestApiClient(header=headers, base_url="http://api.test") as client:
+        assert client.client.is_closed is False
+    assert client.client.is_closed is True
+
+
 def test_client_without_trailing_slash() -> None:
     headers = build_header(token="test-token")
     client_no_slash = RestApiClient(header=headers, base_url="http://api.test", add_trailing_slash=False)
