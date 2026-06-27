@@ -40,7 +40,10 @@ def main(table_name: str, const_filters: dict[str, str] | None = None) -> None:
     header = build_header(token=TOKEN)
 
     with RestApiClient(base_url=base_url, header=header) as client:
-        item_list = []
+        # get_model_fields returns list[Employee] — type checkers infer the concrete
+        # subclass, so Employee-specific fields (.name, .department) are accessible
+        # on every element without casting.
+        item_list: list[Employee] = []
         params = const_filters
         while True:
             res = client.get(table_name, params=params).json()

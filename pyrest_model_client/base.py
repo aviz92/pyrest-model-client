@@ -1,10 +1,9 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from python_base_toolkit.base_structures.base_pydantic_model import BasePydanticModel
 
 if TYPE_CHECKING:
     from pyrest_model_client.client import AsyncRestApiClient, RestApiClient
-
 
 class BaseAPIModel(BasePydanticModel):
     """Base model for API resources with automatic resource path handling.
@@ -49,7 +48,10 @@ class BaseAPIModel(BasePydanticModel):
         return f"{client.base_url.rstrip('/')}/{endpoint.lstrip('/')}"
 
 
-def get_model_fields(items: list[dict], model: type[BaseAPIModel]) -> list[BaseAPIModel]:
+T = TypeVar("T", bound=BaseAPIModel)
+
+
+def get_model_fields(items: list[dict], model: type[T]) -> list[T]:
     """Convert a list of dictionaries to a list of model instances.
 
     Args:

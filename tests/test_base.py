@@ -61,6 +61,12 @@ def test_extra_fields_handling() -> None:
     assert not hasattr(users[0], "extra")  # By default, Pydantic ignores extra fields unless Config is set to 'forbid'
 
 
+def test_get_endpoint_raises_when_resource_path_empty() -> None:
+    model = BaseAPIModel()
+    with pytest.raises(ValueError, match="must define a non-empty resource_path"):
+        model.get_endpoint()
+
+
 def test_get_endpoint() -> None:
     """Test get_endpoint method."""
     user = User(name="Alice", email="alice@test.com", resource_path="users")

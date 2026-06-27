@@ -57,11 +57,9 @@ class Environment(BaseAPIModel):
 ```python
 import os
 
-import httpx
 from dotenv import load_dotenv
 
-from pyrest_model_client import RestApiClient, build_header, get_model_fields
-from pyrest_model_client.base import BaseAPIModel
+from pyrest_model_client import BaseAPIModel, RestApiClient, build_header, get_model_fields
 
 load_dotenv()
 
@@ -75,28 +73,21 @@ class FirstApp(BaseAPIModel):
     resource_path: str = "first_app"
 
 
-# Initialize the client with default settings
 header = build_header(token=TOKEN)
-client = RestApiClient(base_url=BASE_URL, header=header)
-
-# Or configure the client with custom settings
-client = RestApiClient(
-    base_url=BASE_URL,
-    header=header,
-    timeout=httpx.Timeout(60.0, connect=10.0),  # 60s read, 10s connect
-    add_trailing_slash=True,
-    limits=httpx.Limits(max_keepalive_connections=5, max_connections=10),
-)
 
 # Use as a context manager (auto-closes the connection)
+# Optionally configure timeout and connection pool limits:
+#   timeout=httpx.Timeout(60.0, connect=10.0)
+#   limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
 with RestApiClient(base_url=BASE_URL, header=header) as client:
     # Example: Use resource_path from model
     app = FirstApp(name="My App", description="Test")
     endpoint = app.get_endpoint()           # Returns "first_app"
     full_url = app.get_resource_url(client) # Returns full URL
 
-    # Example: Get all items (paginated) and convert to model instances
-    item_list = []
+    # Example: Get all items (paginated) — get_model_fields returns list[FirstApp],
+    # so type checkers infer the concrete subclass on every element.
+    item_list: list[FirstApp] = []
     params = None
     while True:
         res = client.get("first_app", params=params)
@@ -134,7 +125,7 @@ TOKEN = os.getenv("TOKEN")
 BASE_URL = f'{os.getenv("BASE_URL")}:{os.getenv("PORT")}'
 
 
-async def main():
+async def main() -> None:
     header = build_header(token=TOKEN)
 
     async with AsyncRestApiClient(base_url=BASE_URL, header=header) as client:
