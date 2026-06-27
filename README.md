@@ -15,7 +15,7 @@ A simple, flexible Python HTTP client and API modeling toolkit built on top of [
 
 ## 🚀 Features
 - **Model-driven**: Define and interact with API resources as Python classes using `BaseAPIModel`.
-- **Easy HTTP Requests**: Simple `RestApiClient` for GET, POST, PUT, DELETE with automatic header and base URL management.
+- **Easy HTTP Requests**: `RestApiClient` for GET, POST, PUT, PATCH, DELETE with automatic header and base URL management.
 - **Async Support**: Full async/await support with `AsyncRestApiClient` for high-performance concurrent requests.
 - **Automatic Endpoint Normalization**: Configurable endpoint path normalization (trailing slash handling).
 - **Resource Path Integration**: Models can use their `resource_path` to generate endpoints and URLs automatically.
@@ -57,6 +57,7 @@ class Environment(BaseAPIModel):
 ```python
 import os
 
+import httpx
 from dotenv import load_dotenv
 
 from pyrest_model_client import RestApiClient, build_header, get_model_fields
@@ -69,10 +70,6 @@ BASE_URL = f'{os.getenv("BASE_URL")}:{os.getenv("PORT")}'
 
 
 class FirstApp(BaseAPIModel):
-    """
-    Model representing the FirstApp API resource. The fields should match the API response structure.
-    The app resource path is defined as "first_app" in the API.
-    """
     name: str
     description: str | None = None
     resource_path: str = "first_app"
@@ -83,64 +80,70 @@ header = build_header(token=TOKEN)
 client = RestApiClient(base_url=BASE_URL, header=header)
 
 # Or configure the client with custom settings
-import httpx
 client = RestApiClient(
     base_url=BASE_URL,
     header=header,
     timeout=httpx.Timeout(60.0, connect=10.0),  # 60s read, 10s connect
-    add_trailing_slash=True,  # Automatically add trailing slashes
-    limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
+    add_trailing_slash=True,
+    limits=httpx.Limits(max_keepalive_connections=5, max_connections=10),
 )
 
-# Example: Use resource_path from model
-app = FirstApp(name="My App", description="Test")
-endpoint = app.get_endpoint()  # Returns "first_app"
-full_url = app.get_resource_url(client)  # Returns full URL
+# Use as a context manager (auto-closes the connection)
+with RestApiClient(base_url=BASE_URL, header=header) as client:
+    # Example: Use resource_path from model
+    app = FirstApp(name="My App", description="Test")
+    endpoint = app.get_endpoint()           # Returns "first_app"
+    full_url = app.get_resource_url(client) # Returns full URL
 
-# Example: Get all items from the API (paginated) and convert them to model instances
-item_list = []
-params = None
-while res := client.get("first_app", params=params):
-    item_list.extend(get_model_fields(res["results"], model=FirstApp))
+    # Example: Get all items (paginated) and convert to model instances
+    item_list = []
+    params = None
+    while True:
+        res = client.get("first_app", params=params)
+        data = res.json()
+        item_list.extend(get_model_fields(data["results"], model=FirstApp))
+        if not data["next"]:
+            break
+        params = {"page": data["next"].split("/?page=")[-1]}
 
-    if not res["next"]:
-        break
-    params = {"page": res["next"].split("/?page=")[-1]}
+    # Example: Create a new item
+    new_item = client.post("first_app", data={"name": "My App", "description": "A new app"})
 
-# Example: Create a new item
-new_item = client.post("first_app", data={"name": "My App", "description": "A new app"})
+    # Example: Full update
+    updated_item = client.put("first_app/1", data={"name": "Updated App"})
 
-# Example: Update an item
-updated_item = client.put("first_app/1", data={"name": "Updated App"})
+    # Example: Partial update
+    patched_item = client.patch("first_app/1", data={"description": "New description"})
 
-# Example: Delete an item
-client.delete("first_app/1")
+    # Example: Delete an item
+    client.delete("first_app/1")
 ```
 
 ### 3. Using Async Client
 ```python
-import os
 import asyncio
+import os
 
 from dotenv import load_dotenv
+
 from pyrest_model_client import AsyncRestApiClient, build_header
-from pyrest_model_client.base import BaseAPIModel
 
 load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
 BASE_URL = f'{os.getenv("BASE_URL")}:{os.getenv("PORT")}'
 
+
 async def main():
     header = build_header(token=TOKEN)
 
-    # Use async client as context manager
     async with AsyncRestApiClient(base_url=BASE_URL, header=header) as client:
-        # Make async requests
-        response = await client.get("first_app")
-        new_item = await client.post("first_app", data={"name": "Async App"})
-        updated = await client.put("first_app/1", data={"name": "Updated"})
+        data = (await client.get("first_app")).json()
+        await client.post("first_app", data={"name": "Async App"})
+        await client.put("first_app/1", data={"name": "Updated"})
+        await client.patch("first_app/1", data={"description": "Patched"})
         await client.delete("first_app/1")
+
 
 asyncio.run(main())
 ```
