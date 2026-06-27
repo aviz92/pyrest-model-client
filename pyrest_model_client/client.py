@@ -120,6 +120,12 @@ class RestApiClient(_BaseRestClient):
     def delete(self, endpoint: str) -> httpx.Response:
         return self.request(HttpMethod.DELETE, endpoint)
 
+    def __enter__(self) -> "RestApiClient":
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        self.client.close()
+
 
 class AsyncRestApiClient(_BaseRestClient):
     """Asynchronous HTTP client for REST API requests.

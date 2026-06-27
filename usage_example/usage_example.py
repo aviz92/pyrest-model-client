@@ -39,17 +39,17 @@ class Department(VersionedModelApp):
 def main(table_name: str, const_filters: dict[str, str] | None = None) -> None:
     header = build_header(token=TOKEN)
 
-    client = RestApiClient(base_url=base_url, header=header)
+    with RestApiClient(base_url=base_url, header=header) as client:
+        item_list = []
+        params = const_filters
+        while True:
+            res = client.get(table_name, params=params).json()
+            item_list.extend(get_model_fields(res["results"], model=Employee))
 
-    # Example: Get all items from the API (paginated) and convert them to model instances
-    item_list = []
-    params = const_filters
-    while res := client.get(table_name, params=params):  # pylint: disable=W0149
-        item_list.extend(get_model_fields(res["results"], model=Employee))
+            if not res["next"]:
+                break
+            params = {"page": res["next"].split("/?page=")[-1]}
 
-        if not res["next"]:
-            break
-        params = {"page": res["next"].split("/?page=")[-1]}
     logger.info(f"Response: {json_pretty_format(data=item_list, default=default_serialize)}")
 
 

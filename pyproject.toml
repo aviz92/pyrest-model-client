@@ -24,15 +24,11 @@ classifiers = [
 dependencies = [
     "colorlog>=6.10.1",
     "custom-python-logger>=4.0.0",
-    "email-validator>=2.3.0",
     "httpx>=0.28.1",
     "pathlib>=1.0.1",
     "pydantic>=2.12.4",
     "python-base-toolkit>=1.0.2",
     "python-dotenv>=1.2.1",
-    "python-simple-email-sender>=1.0.6",
-    "python-vault>=0.0.3",
-    "pyyaml>=6.0.3",
 ]
 
 [project.optional-dependencies]
