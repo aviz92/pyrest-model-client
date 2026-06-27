@@ -125,6 +125,13 @@ class RestApiClient:
             data = {}
         return self.request("PUT", endpoint, json=data, as_json=as_json)
 
+    def patch(
+        self, endpoint: str, data: dict, as_json: bool = True
+    ) -> httpx.Response | dict:
+        if data is None:
+            data = {}
+        return self.request("PATCH", endpoint, json=data, as_json=as_json)
+
     def delete(self, endpoint: str, as_json: bool = True) -> httpx.Response | dict:
         return self.request("DELETE", endpoint, as_json=as_json)
 
@@ -182,10 +189,22 @@ class AsyncRestApiClient:
         """
         self.client.headers.update(header)
 
+    def normalize_endpoint(self, endpoint: str, add_trailing_slash: bool = True) -> str:
+        if endpoint.startswith("http://") or endpoint.startswith("https://"):
+            return endpoint
+
+        if add_trailing_slash and not endpoint.endswith("/"):
+            endpoint = endpoint + "/"
+
+        if not endpoint.startswith("http") and not endpoint.startswith("https"):
+            endpoint = f'{self.base_url}/{endpoint.lstrip("/")}' if self.base_url else endpoint
+
+        return endpoint
+
     async def request(
         self, method: str, endpoint: str, as_json: bool = False, **kwargs: Any
     ) -> httpx.Response | dict:
-        endpoint = RestApiClient.normalize_endpoint(endpoint, self.add_trailing_slash)
+        endpoint = self.normalize_endpoint(endpoint, self.add_trailing_slash)
         self.logger.debug(
             f"Making {method} request to {endpoint} with kwargs: {kwargs}"
         )
@@ -214,6 +233,13 @@ class AsyncRestApiClient:
         if data is None:
             data = {}
         return await self.request("PUT", endpoint, json=data, as_json=as_json)
+
+    async def patch(
+        self, endpoint: str, data: dict, as_json: bool = True
+    ) -> httpx.Response | dict:
+        if data is None:
+            data = {}
+        return await self.request("PATCH", endpoint, json=data, as_json=as_json)
 
     async def delete(
         self, endpoint: str, as_json: bool = True

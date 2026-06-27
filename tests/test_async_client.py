@@ -49,6 +49,16 @@ async def test_async_put_request(async_client: AsyncRestApiClient) -> None:
 
 @pytest.mark.asyncio
 @respx.mock
+async def test_async_patch_request_sends_partial_data(async_client: AsyncRestApiClient) -> None:
+    route = respx.patch("http://api.test/items/1/").mock(return_value=Response(200, json={"name": "updated"}))
+    payload = {"name": "updated"}
+    response = await async_client.patch("items/1", data=payload)
+    assert route.called, "PATCH route was not called"
+    assert response == {"name": "updated"}, f"Unexpected response: {response}"
+
+
+@pytest.mark.asyncio
+@respx.mock
 async def test_async_delete_request(async_client: AsyncRestApiClient) -> None:
     """Test async DELETE request."""
     route = respx.delete("http://api.test/delete/1/").mock(return_value=Response(204, json={"deleted": True}))

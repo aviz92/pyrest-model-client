@@ -67,6 +67,25 @@ def test_request_error_raises_exception(client: RestApiClient) -> None:
 
 
 @respx.mock
+def test_patch_request_sends_partial_data(client: RestApiClient) -> None:
+    route = respx.patch("http://api.test/items/1/").mock(return_value=Response(200, json={"name": "updated"}))
+    payload = {"name": "updated"}
+    response = client.patch("items/1", data=payload)
+    assert route.called, "PATCH route was not called"
+    sent_data = json.loads(route.calls.last.request.content)
+    assert sent_data == payload, f"Expected {payload}, got {sent_data}"
+    assert response == {"name": "updated"}, f"Unexpected response: {response}"
+
+
+@respx.mock
+def test_patch_request_returns_response_object(client: RestApiClient) -> None:
+    respx.patch("http://api.test/items/1/").mock(return_value=Response(200, json={"name": "updated"}))
+    response = client.patch("items/1", data={"name": "updated"}, as_json=False)
+    assert isinstance(response, httpx.Response), f"Expected Response, got {type(response)}"
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+
+
+@respx.mock
 def test_delete_request(client: RestApiClient) -> None:
     route = respx.delete("http://api.test/delete/1/").mock(return_value=Response(204, json={"deleted": True}))
     response = client.delete("delete/1")
