@@ -5,6 +5,7 @@ from python_base_toolkit.base_structures.base_pydantic_model import BasePydantic
 if TYPE_CHECKING:
     from pyrest_model_client.client import AsyncRestApiClient, RestApiClient
 
+
 class BaseAPIModel(BasePydanticModel):
     """Base model for API resources with automatic resource path handling.
 
