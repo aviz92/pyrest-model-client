@@ -45,7 +45,7 @@ def main(table_name: str, const_filters: dict[str, str] | None = None) -> None:
         # on every element without casting.
         item_list: list[Employee] = []
         params = const_filters
-        while True:
+        while True:  # pylint: disable=W0149
             res = client.get(table_name, params=params).json()
             item_list.extend(get_model_fields(res["results"], model=Employee))
 
