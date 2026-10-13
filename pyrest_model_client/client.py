@@ -1,3 +1,4 @@
+import ssl
 from typing import Any
 
 import httpx
@@ -68,6 +69,7 @@ class RestApiClient(_BaseRestClient):
         follow_redirects: bool = True,
         add_trailing_slash: bool = True,
         limits: httpx.Limits | None = None,
+        verify: bool | ssl.SSLContext = True,
     ) -> None:
         """Initialize the RestApiClient.
 
@@ -78,6 +80,7 @@ class RestApiClient(_BaseRestClient):
             follow_redirects: Whether to follow HTTP redirects.
             add_trailing_slash: Whether to automatically add trailing slash to endpoints.
             limits: Connection pool limits (max_keepalive_connections, max_connections).
+            verify: SSL verification settings (True, False, or SSLContext).
         """
         super().__init__(base_url=base_url, add_trailing_slash=add_trailing_slash)
         self.client = httpx.Client(
@@ -85,6 +88,7 @@ class RestApiClient(_BaseRestClient):
             timeout=self.get_default_timeout(timeout=timeout),
             follow_redirects=follow_redirects,
             limits=self.get_default_limits(limits=limits),
+            verify=verify,
         )
         self.set_credentials(header=header)
 
